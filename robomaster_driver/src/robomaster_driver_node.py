@@ -8,6 +8,7 @@ from threading import Thread
 from cv_bridge import CvBridge
 import numpy as np
 import tf
+from pyquaternion import Quaternion
 
 
 def euler_to_quaternion(yaw, pitch, roll):
@@ -23,7 +24,7 @@ class RobomasterNode:
         # Initialize tf
         self._tf_br = tf.TransformBroadcaster()
 
-        # Initialize robot and set gimbal lead
+        # Initialize robot and set chassis lead
         self._robot = robot.Robot()
         try:
             self._robot.initialize(conn_type="sta")
@@ -31,7 +32,8 @@ class RobomasterNode:
             rospy.logerr("Could not connect to robot, shutting down.")
             return
         rospy.loginfo("Connected to robot.")
-        self._robot.set_robot_mode(mode=robot.GIMBAL_LEAD)
+        self._robot.set_robot_mode(mode=robot.CHASSIS_LEAD)
+        self._robot.gimbal.recenter()
 
         # Mark ROS mode
         self._robot.led.set_led(comp=led.COMP_ALL, r=255, g=0, b=255, effect=led.EFFECT_ON)
@@ -48,13 +50,15 @@ class RobomasterNode:
         self._robot.gimbal.sub_angle(freq=50, callback=self._gimbal_angle_cb)
         
         # Prepare odometry publishing
+        self._init_orientation = None
         self._pub_odom_tf = rospy.get_param("~publish_odom_tf", True)
+        self._odom_include_attitude = rospy.get_param("~odom_include_attitude", False)
         self._pub_odom = rospy.Publisher("/odom", Odometry, queue_size=3)
         # self._robot.chassis.sub_velocity(freq=50, callback=self._vel_cb)
         self._robot.chassis.sub_position(cs=1, freq=50, callback=self._odom_cb)
 
         # Prepare IMU publishing
-        self._last_attitude = {'yaw': 0, 'pitch': 0, 'roll': 0}
+        self._last_attitude = None
         self._robot.chassis.sub_attitude(freq=50, callback=self._attitude_cb)
         self._pub_imu = rospy.Publisher("/imu/data", Imu, queue_size=3)
         self._robot.chassis.sub_imu(freq=50, callback=self._imu_cb)
@@ -67,6 +71,8 @@ class RobomasterNode:
     #     print(data)
 
     def _odom_cb(self, data):
+        if self._last_attitude is None or self._init_orientation is None:
+            return
         x, y, z = data
         msg = Odometry()
         msg.header.stamp = rospy.Time.now()
@@ -74,16 +80,19 @@ class RobomasterNode:
         msg.child_frame_id = "base_link"
         msg.pose.pose.position.x = x
         msg.pose.pose.position.y = -y
-        qxyzw = euler_to_quaternion(self._last_attitude['yaw'], self._last_attitude['pitch'], self._last_attitude['roll'])
-        msg.pose.pose.orientation.x = qxyzw[0]
-        msg.pose.pose.orientation.y = qxyzw[1]
-        msg.pose.pose.orientation.z = qxyzw[2]
-        msg.pose.pose.orientation.w = qxyzw[3]
+        if self._odom_include_attitude:
+            q = self._last_attitude * self._init_orientation.inverse
+        else:
+            q = Quaternion(axis=(0, 0, 1), radians=self._last_attitude.yaw_pitch_roll[0])
+        msg.pose.pose.orientation.x = q.x
+        msg.pose.pose.orientation.y = q.y
+        msg.pose.pose.orientation.z = q.z
+        msg.pose.pose.orientation.w = q.w
         self._pub_odom.publish(msg)
 
         if self._pub_odom_tf:
             self._tf_br.sendTransform((x, -y, 0),
-                     qxyzw,
+                     (q.x, q.y, q.z, q.w),
                      msg.header.stamp,
                      "base_link",
                      "odom")
@@ -99,11 +108,11 @@ class RobomasterNode:
         msg.angular_velocity.x = wx
         msg.angular_velocity.y = wy
         msg.angular_velocity.z = wz
-        qxyzw = euler_to_quaternion(self._last_attitude['yaw'], self._last_attitude['pitch'], self._last_attitude['roll'])
-        msg.orientation.x = qxyzw[0]
-        msg.orientation.y = qxyzw[1]
-        msg.orientation.z = qxyzw[2]
-        msg.orientation.w = qxyzw[3]
+        q = self._last_attitude * self._init_orientation.inverse
+        msg.orientation.x = q.x
+        msg.orientation.y = q.y
+        msg.orientation.z = q.z
+        msg.orientation.w = q.w
         self._pub_imu.publish(msg)
     
     def _gimbal_angle_cb(self, data):
@@ -116,9 +125,10 @@ class RobomasterNode:
 
     def _attitude_cb(self, data):
         yaw, pitch, roll = data
-        self._last_attitude['yaw'] = -yaw/180.0*np.pi
-        self._last_attitude['pitch'] = -pitch/180.0*np.pi
-        self._last_attitude['roll'] = roll/180.0*np.pi
+        self._last_attitude = Quaternion(axis=(0, 0, 1), degrees=-yaw)*Quaternion(axis=(0, 1, 0), degrees=-pitch)*Quaternion(axis=(1, 0, 0), degrees=roll)
+
+        if self._init_orientation is None:
+            self._init_orientation = self._last_attitude
 
     def _twist_cb(self, msg):
         if msg.linear.x != 0 or msg.linear.y != 0 or msg.angular.z != 0:
@@ -135,7 +145,9 @@ class RobomasterNode:
         while not rospy.is_shutdown():
             try:
                 img = self._robot.camera.read_cv2_image(timeout=0.5, strategy='newest')
-                msg = self._cv_bridge.cv2_to_imgmsg(img, encoding="rgb8")
+                msg = self._cv_bridge.cv2_to_imgmsg(img, encoding="bgr8")
+                msg.header.stamp = rospy.Time.now()
+                msg.header.frame_id = "camera_optical_link"
                 self._img_pub.publish(msg)
             except:
                 pass
