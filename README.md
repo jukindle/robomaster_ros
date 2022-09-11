@@ -1,6 +1,8 @@
 # robomaster_ros
 ROS1 driver for the Robomaster S1 and Robomaster EP through the official SDK. This driver was developed on ROS Noetic.
 
+https://user-images.githubusercontent.com/32697515/189522146-94ccefc5-be5e-4870-9f92-52ee823af01c.mp4
+
 # Preparation
 
 ## Robomaster EP
