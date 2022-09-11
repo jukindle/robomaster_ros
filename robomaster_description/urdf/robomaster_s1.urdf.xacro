@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<robot name="robomaster_s1"
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="PI" value="3.1415926535897931" />
+
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0" />
+  </material>
+
+
+  <!-- base_link to base -->
+  <link name="base_link"/>
+  <joint name="base_link_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="base" />
+  </joint>
+
+  <!-- Definition of robot base -->
+  <link name="base">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 ${PI/2.0}"/>
+      <geometry>
+        <mesh filename="package://robomaster_description/meshes/visual/base.stl"/>
+      </geometry>
+      <material name="dark_grey" />
+    </visual>
+    <inertial>
+      <!-- Center of mass, Dummy TODO -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <!-- Moments of inertia: ( chassis without wheels ) -->
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+
+  <!-- First axis of gimbal -->
+  <joint name="gimbal_yaw_joint" type="revolute">
+    <origin xyz="0 0 0.09" rpy="0 0 0" />
+    <axis xyz="0 0 1"/>
+    <parent link="base"/>
+    <child link="gimbal_base" />
+    <limit effort="1000.0" lower="${-1.5*PI}" upper="${1.5*PI}" velocity="${2.0*PI}"/>
+  </joint>
+
+  <!-- Base of gimbal -->
+  <link name="gimbal_base">
+    <visual>
+      <origin xyz="0 0 -0.09" rpy="0 0 ${PI/2.0}"/>
+      <geometry>
+        <mesh filename="package://robomaster_description/meshes/visual/gimbal_base.stl"/>
+      </geometry>
+      <material name="dark_grey" />
+    </visual>
+    <inertial>
+      <!-- Center of mass, Dummy TODO -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <!-- Moments of inertia: ( chassis without wheels ) -->
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+
+  <!-- Second axis of gimbal -->
+  <joint name="gimbal_pitch_joint" type="revolute">
+    <origin xyz="0 0 0.075" rpy="0 0 0" />
+    <axis xyz="0 1 0"/>
+    <parent link="gimbal_base"/>
+    <child link="gimbal_head" />
+    <limit effort="1000.0" lower="${-PI/4.0}" upper="${PI/4.0}" velocity="${2.0*PI}"/>
+  </joint>
+
+  <!-- Gimbal head -->
+  <link name="gimbal_head">
+    <visual>
+      <origin xyz="0 0 -0.165" rpy="0 0 ${PI/2.0}"/>
+      <geometry>
+        <mesh filename="package://robomaster_description/meshes/visual/gimbal_head.stl"/>
+      </geometry>
+      <material name="dark_grey" />
+    </visual>
+    <inertial>
+      <!-- Center of mass, Dummy TODO -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <!-- Moments of inertia: ( chassis without wheels ) -->
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+
+  <!-- IMU -->
+  <link name="imu_link"/>
+  <joint name="base_to_imu" type="fixed">
+    <origin xyz="-0.1 0 0.07" rpy="0 0 0" />
+    <parent link="base"/>
+    <child link="imu_link" />
+  </joint>
+
+</robot>

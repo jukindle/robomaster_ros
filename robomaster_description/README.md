@@ -1,0 +1,1 @@
+The mesh model for the robot was taken from https://sketchfab.com/3d-models/robomaster-s1-finchtest-3aaf212833a34b6fb8e12a661082d8a0 under the CC Attribution license. The model was split into separate pieces for the creation of the URDF model.

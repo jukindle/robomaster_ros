@@ -1,0 +1,4 @@
+<launch>
+  <param name="robot_description"
+         command="$(find xacro)/xacro '$(find robomaster_description)/urdf/robomaster_s1.urdf.xacro'"/>
+</launch>

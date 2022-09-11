@@ -1,0 +1,11 @@
+<launch>
+
+  <include file="$(find robomaster_description)/launch/load.launch"/>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
+
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find robomaster_description)/rviz/robomaster.rviz" />
+
+</launch>

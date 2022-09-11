@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>robomaster_driver</name>
+  <version>0.0.0</version>
+  <description>The ROS driver  for the robomaster S1 and EP</description>
+
+  <maintainer email="julien.kindle@gmail.com">Julien Kindle</maintainer>
+  <license>Apache-2.0</license>
+
+  <url type="repository">https://github.com/jukindle/robomaster_ros</url>
+  <url type="website">https://julien.li</url>
+
+  <author email="julien.kindle@gmail.com">Julien Kindle</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>catkin_simple</depend>
+  <depend>rospy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>robomaster</depend>
+  <depend>robomaster_description</depend>
+
+</package>

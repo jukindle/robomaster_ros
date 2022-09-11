@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>robomaster_description</name>
+  <version>0.0.0</version>
+  <description>The robot description for the Robomaster robots.</description>
+
+  <maintainer email="julien.kindle@gmail.com">Julien Kindle</maintainer>
+  <license>Apache-2.0</license>
+
+  <url type="repository">https://github.com/jukindle/robomaster_ros</url>
+  <url type="website">https://julien.li</url>
+
+  <author email="julien.kindle@gmail.com">Julien Kindle</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>catkin_simple</depend>
+  <depend>urdf</depend>
+
+</package>
