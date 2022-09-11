@@ -56,7 +56,7 @@ class RobomasterNode:
         # Prepare IMU publishing
         self._last_attitude = {'yaw': 0, 'pitch': 0, 'roll': 0}
         self._robot.chassis.sub_attitude(freq=50, callback=self._attitude_cb)
-        self._pub_imu = rospy.Publisher("~imu", Imu, queue_size=3)
+        self._pub_imu = rospy.Publisher("/imu/data", Imu, queue_size=3)
         self._robot.chassis.sub_imu(freq=50, callback=self._imu_cb)
 
         # Subscribe to twist topic

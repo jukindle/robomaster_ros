@@ -5,7 +5,7 @@
     <param name="autorepeat_rate" value="10.0"/>
   </node>
 
-  <!-- Launch a robot state publisher -->
+  <!-- Launch joy to cmd vel converter -->
   <node pkg="teleop_twist_joy" type="teleop_node" name="teleop_node" output="screen">
     <param name="enable_button" value="4"/>
     <param name="axis_linear/x" value="1"/>
@@ -17,5 +17,8 @@
     <param name="axis_angular" value="3"/>
     <param name="scale_angular" value="1"/>
   </node>
+
+  <!-- Launch rviz -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find robomaster_driver)/rviz/robomaster.rviz" />
 
 </launch>
