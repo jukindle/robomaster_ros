@@ -98,11 +98,18 @@
 
 
  <!-- Camera -->
-  <link name="camera_optical_link"/>
+  <link name="camera_link"/>
   <joint name="head_to_cam" type="fixed">
-    <origin xyz="0.0673 0 0.0243" rpy="${-PI/2.0} 0 ${-PI/2.0}" />
+    <origin xyz="0.0673 0 0.0243" rpy="0 0 0" />
     <parent link="gimbal_head"/>
-    <child link="camera_optical_link" />
+    <child link="camera_link" />
+  </joint>
+
+  <link name="camera_link_optical_frame"/>
+<joint name="cam_to_optical" type="fixed">
+    <origin xyz="0 0 0" rpy="${-PI/2.0} 0 ${-PI/2.0}" />
+    <parent link="camera_link"/>
+    <child link="camera_link_optical_frame" />
   </joint>
 
 </robot>
