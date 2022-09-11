@@ -13,7 +13,11 @@ On the S1, you need to have the device rooted. This is a fairly simple process f
 
 # Installation
 
-Install catkin tools by executin
+Install the robomaster python sdk by
+
+    pip3 install robomaster
+
+Install catkin tools by executing
 
     sudo apt install python3-catkin-tools
    
@@ -23,6 +27,10 @@ Then, create a catkin workspace and clone this repo into it, together with its d
     catkin init
     git clone https://github.com/catkin/catkin_simple.git src/catkin_simple
     git clone https://github.com/jukindle/robomaster_ros.git src/robomaster_ros
+
+Then, install the ROS dependencies by
+
+    rosdep install --from-paths src --ignore-src -r -y
 
 Finally, build the workspace
 

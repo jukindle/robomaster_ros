@@ -21,5 +21,8 @@
   <depend>cv_bridge</depend>
   <depend>robomaster</depend>
   <depend>robomaster_description</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joy</depend>
+  <depend>teleop_twist_joy</depend>
 
 </package>

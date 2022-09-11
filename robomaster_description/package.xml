@@ -15,5 +15,9 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>catkin_simple</depend>
   <depend>urdf</depend>
+  <depend>xacro</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <depend>rviz</depend>
 
 </package>
