@@ -15,11 +15,12 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>catkin_simple</depend>
   <depend>rospy</depend>
+  <depend>pyquaternion</depend>
+  <depend>robomaster</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>cv_bridge</depend>
-  <depend>robomaster</depend>
   <depend>robomaster_description</depend>
   <depend>robot_state_publisher</depend>
   <depend>joy</depend>
