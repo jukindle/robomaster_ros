@@ -25,9 +25,17 @@ class RobomasterNode:
         self._tf_br = tf.TransformBroadcaster()
 
         # Initialize robot and set chassis lead
+        conn_mode = rospy.get_param("~connection_mode", "WIFI")  # WIFI, USB
         self._robot = robot.Robot()
         try:
-            self._robot.initialize(conn_type="sta")
+            if conn_mode == "WIFI":
+                self._robot.initialize(conn_type="sta")
+            elif conn_mode == "USB":
+                self._robot.initialize(conn_type="rndis")
+            else:
+                rospy.logerr("Unknown connection mode {}".format(conn_mode))
+                return
+                    
         except:
             rospy.logerr("Could not connect to robot, shutting down.")
             return
@@ -40,7 +48,7 @@ class RobomasterNode:
 
         # Sub to cam
         self._cv_bridge = CvBridge()
-        self._img_pub = rospy.Publisher("/camera/image", Image, queue_size=3)
+        self._img_pub = rospy.Publisher("/camera/image_raw", Image, queue_size=3)
         self._robot.camera.start_video_stream(display=False)
         self._cam_thread = Thread(target=self._cam_loop)
         self._cam_thread.start()
@@ -51,7 +59,7 @@ class RobomasterNode:
         
         # Prepare odometry publishing
         self._init_orientation = None
-        self._pub_odom_tf = rospy.get_param("~publish_odom_tf", True)
+        self._pub_odom_tf = rospy.get_param("~publish_odom_tf", False)
         self._odom_include_attitude = rospy.get_param("~odom_include_attitude", False)
         self._pub_odom = rospy.Publisher("/odom", Odometry, queue_size=3)
         # self._robot.chassis.sub_velocity(freq=50, callback=self._vel_cb)
@@ -144,10 +152,12 @@ class RobomasterNode:
     def _cam_loop(self):
         while not rospy.is_shutdown():
             try:
-                img = self._robot.camera.read_cv2_image(timeout=0.5, strategy='newest')
+                tsn = rospy.Time.now()
+                img = self._robot.camera.read_cv2_image(timeout=0.1, strategy='newest')
+                tsn2 = rospy.Time.now()
                 msg = self._cv_bridge.cv2_to_imgmsg(img, encoding="bgr8")
-                msg.header.stamp = rospy.Time.now()
-                msg.header.frame_id = "camera_optical_link"
+                msg.header.stamp = tsn + (tsn2-tsn)/2.0
+                msg.header.frame_id = "camera_link_optical_frame"
                 self._img_pub.publish(msg)
             except:
                 pass
