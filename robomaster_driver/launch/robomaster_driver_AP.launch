@@ -1,0 +1,14 @@
+<launch>
+
+  <!-- Load the robot description -->
+  <include file="$(find robomaster_description)/launch/load.launch"/>
+
+  <!-- Launch a robot state publisher -->
+  <param name = "~connection_mode" type = "str" value = "AP" />
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
+
+  <!-- Launch the driver node -->
+  <node name="robomaster_driver" pkg="robomaster_driver" type="robomaster_driver_node.py" output="screen">
+  </node>
+
+</launch>

@@ -25,13 +25,15 @@ class RobomasterNode:
         self._tf_br = tf.TransformBroadcaster()
 
         # Initialize robot and set chassis lead
-        conn_mode = rospy.get_param("~connection_mode", "WIFI")  # WIFI, USB
+        conn_mode = rospy.get_param("~connection_mode", "WIFI")  # WIFI, USB,AP
         self._robot = robot.Robot()
         try:
             if conn_mode == "WIFI":
                 self._robot.initialize(conn_type="sta")
             elif conn_mode == "USB":
                 self._robot.initialize(conn_type="rndis")
+            elif conn_mode == "AP":
+                self._robot.initialize(conn_type="ap")          
             else:
                 rospy.logerr("Unknown connection mode {}".format(conn_mode))
                 return
