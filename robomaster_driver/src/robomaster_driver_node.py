@@ -77,6 +77,11 @@ class RobomasterNode:
         # Subscribe to twist topic
         self._standing = True
         self._sub = rospy.Subscriber("/cmd_vel", Twist, self._twist_cb, queue_size=3)
+
+        #Subscribe to event
+        self._event_lock = 0
+        self._event_sub = rospy.Subscriber("/cmd_event", Twist, self._controller_event, queue_size=3)
+
         
     # def _vel_cb(self, data):
     #     print(data)
@@ -173,15 +178,16 @@ class RobomasterNode:
             except:
                 pass
     
-    def _controller_envent(self,msg):
+    def _controller_event(self,msg):
         if msg.linear.x ==1 :
-            self._robot.blaster.firle(fire_type="ir", times=1)
-        if msg.angular.x ==1 :
-            self._robot.chassis.stick_overlay(0)
-        if msg.angular.y ==1 :
-            self._robot.chassis.stick_overlay(1)
-        if msg.angular.z ==1 :
-            self._robot.chassis.stick_overlay(2)
+            self._robot.blaster.fire(fire_type="ir", times=1)
+        if msg.angular.x ==1 and self._event_lock==0:
+            self._robot.gimbal.recenter(pitch_speed=100, yaw_speed=100)
+            self._event_lock = 1 
+        if msg.angular.z ==1 and self._event_lock==1  :
+            self._event_lock = 0
+        # if msg.angular.z ==1 :
+        #     self._robot.chassis.stick_overlay(2)
         
 
     def shutdown(self):
