@@ -42,7 +42,8 @@ class RobomasterNode:
             rospy.logerr("Could not connect to robot, shutting down.")
             return
         rospy.loginfo("Connected to robot.")
-        self._robot.set_robot_mode(mode=robot.CHASSIS_LEAD)
+        # self._robot.set_robot_mode(mode=robot.CHASSIS_LEAD)
+        self._robot.set_robot_mode(mode="free")
         self._robot.gimbal.recenter()
 
         # Mark ROS mode
@@ -61,8 +62,8 @@ class RobomasterNode:
         
         # Prepare odometry publishing
         self._init_orientation = None
-        self._pub_odom_tf = rospy.get_param("~publish_odom_tf", False)
-        self._odom_include_attitude = rospy.get_param("~odom_include_attitude", False)
+        self._pub_odom_tf = rospy.get_param("~publish_odom_tf", True)
+        self._odom_include_attitude = rospy.get_param("~odom_include_attitude", True)
         self._pub_odom = rospy.Publisher("/odom", Odometry, queue_size=3)
         # self._robot.chassis.sub_velocity(freq=50, callback=self._vel_cb)
         self._robot.chassis.sub_position(cs=1, freq=50, callback=self._odom_cb)
@@ -141,6 +142,8 @@ class RobomasterNode:
             self._init_orientation = self._last_attitude
 
     def _twist_cb(self, msg):
+        self._robot.gimbal.drive_speed(pitch_speed=msg.angular.x,yaw_speed=msg.angular.y)
+
         if msg.linear.x != 0 or msg.linear.y != 0 or msg.angular.z != 0:
             self._standing = False
         
@@ -150,6 +153,12 @@ class RobomasterNode:
 
         if not self._standing:
             self._robot.chassis.drive_speed(x=msg.linear.x, y=-msg.linear.y, z=-msg.angular.z/np.pi*180.0, timeout=1)
+            # self._robot.chassis.drive_speed(x=msg.linear.x, y=-msg.linear.y, z=0, timeout=1)
+            self._robot.gimbal.drive_speed(pitch_speed=msg.angular.x,yaw_speed=msg.angular.y)
+
+            # self._robot.chassis.drive_speed(x=0, y=0, z=-msg.linear.x*10/np.pi*180.0, timeout=1)
+            # self._robot.gimbal.drive_speed(pitch_speed=msg.angular.x,yaw_speed=msg.angular.y)
+
 
     def _cam_loop(self):
         while not rospy.is_shutdown():
@@ -163,6 +172,17 @@ class RobomasterNode:
                 self._img_pub.publish(msg)
             except:
                 pass
+    
+    def _controller_envent(self,msg):
+        if msg.linear.x ==1 :
+            self._robot.blaster.firle(fire_type="ir", times=1)
+        if msg.angular.x ==1 :
+            self._robot.chassis.stick_overlay(0)
+        if msg.angular.y ==1 :
+            self._robot.chassis.stick_overlay(1)
+        if msg.angular.z ==1 :
+            self._robot.chassis.stick_overlay(2)
+        
 
     def shutdown(self):
         self._robot.camera.stop_video_stream()
